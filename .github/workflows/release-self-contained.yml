@@ -62,7 +62,16 @@ jobs:
           set -euo pipefail
           APP="build/Build/Products/Release-iphoneos/AlWafi.app"
           test -d "$APP"
-          test -f "$APP/alwafi_ios.sqlite"
+          cp AlWafi/Resources/alwafi_ios.sqlite "$APP/alwafi_ios.sqlite"
+          python3 - "$APP/alwafi_ios.sqlite" <<'PY'
+          import sqlite3, sys
+          db = sqlite3.connect(sys.argv[1])
+          n = db.execute("SELECT COUNT(*) FROM entries").fetchone()[0]
+          ok = db.execute("PRAGMA integrity_check").fetchone()[0]
+          print("bundled rows:", n, "integrity:", ok)
+          assert n == 279093
+          assert ok == "ok"
+          PY
           rm -rf Payload AlWafi-self-contained-unsigned.ipa
           mkdir Payload
           cp -R "$APP" Payload/
