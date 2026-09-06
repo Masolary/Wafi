@@ -1,0 +1,109 @@
+name: Release self-contained IPA
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'Dictionary/payload/**'
+      - 'scripts/rebuild_mobile_db.py'
+      - '.github/workflows/release-self-contained.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Reconstruct full dictionary database
+        run: |
+          python3 scripts/rebuild_mobile_db.py
+          ls -lh AlWafi/Resources/alwafi_ios.sqlite
+
+      - name: Validate database
+        run: |
+          python3 - <<'PY'
+          import sqlite3
+          db = sqlite3.connect("AlWafi/Resources/alwafi_ios.sqlite")
+          n = db.execute("SELECT COUNT(*) FROM entries").fetchone()[0]
+          ok = db.execute("PRAGMA integrity_check").fetchone()[0]
+          print("rows:", n, "integrity:", ok)
+          assert n == 279093
+          assert ok == "ok"
+          PY
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build for iPhone without signing
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project AlWafi.xcodeproj \
+            -scheme AlWafi \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package self-contained IPA
+        run: |
+          set -euo pipefail
+          APP="build/Build/Products/Release-iphoneos/AlWafi.app"
+          test -d "$APP"
+          test -f "$APP/alwafi_ios.sqlite"
+          rm -rf Payload AlWafi-self-contained-unsigned.ipa
+          mkdir Payload
+          cp -R "$APP" Payload/
+          /usr/bin/zip -qry AlWafi-self-contained-unsigned.ipa Payload
+          shasum -a 256 AlWafi-self-contained-unsigned.ipa
+          ls -lh AlWafi-self-contained-unsigned.ipa
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AlWafi-self-contained-unsigned-ipa
+          path: AlWafi-self-contained-unsigned.ipa
+          retention-days: 90
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="v1.0.0"
+          NOTES=$(cat <<'EOF'
+          ## Al-Wafi for iOS v1.0.0
+
+          Native SwiftUI offline iOS edition of the recovered Golden Al-Wafi dictionary.
+
+          - 279,093 translation rows embedded in the app
+          - 234,700 Arabic → English sense rows
+          - 44,393 specialist English → Arabic entries
+          - Fully offline
+          - Arabic and English search
+          - iPhone and iPad
+          - iOS 17.0+
+          
+          **Installation:** the IPA is unsigned and must be signed with your own Apple Developer identity, AltStore/SideStore, Sideloadly, or another compatible signing method.
+          EOF
+          )
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" AlWafi-self-contained-unsigned.ipa --clobber
+          else
+            gh release create "$TAG" AlWafi-self-contained-unsigned.ipa \
+              --title "Al-Wafi for iOS v1.0.0" \
+              --notes "$NOTES" \
+              --target "${GITHUB_SHA}"
+          fi
