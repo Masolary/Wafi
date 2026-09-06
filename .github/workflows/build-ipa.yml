@@ -1,0 +1,72 @@
+name: Build unsigned IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'AlWafi/**'
+      - 'project.yml'
+      - '.github/workflows/build-ipa.yml'
+
+jobs:
+  build:
+    runs-on: macos-15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Prepare optional bundled dictionary
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f Dictionary/alwafi_ios.sqlite.xz ]]; then
+            mkdir -p AlWafi/Resources
+            xz -dc Dictionary/alwafi_ios.sqlite.xz > AlWafi/Resources/alwafi_ios.sqlite
+            echo "Bundling dictionary database:"
+            ls -lh AlWafi/Resources/alwafi_ios.sqlite
+          else
+            echo "No bundled database found; app will use first-launch import mode."
+          fi
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build for iPhone without signing
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project AlWafi.xcodeproj \
+            -scheme AlWafi \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package IPA
+        run: |
+          set -euo pipefail
+          APP="build/Build/Products/Release-iphoneos/AlWafi.app"
+          test -d "$APP"
+          rm -rf Payload AlWafi-unsigned.ipa
+          mkdir Payload
+          cp -R "$APP" Payload/
+          /usr/bin/zip -qry AlWafi-unsigned.ipa Payload
+          ls -lh AlWafi-unsigned.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AlWafi-unsigned-ipa
+          path: AlWafi-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 30
