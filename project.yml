@@ -1,0 +1,44 @@
+name: AlWafi
+options:
+  bundleIdPrefix: com.masolary
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+targets:
+  AlWafi:
+    type: application
+    platform: iOS
+    sources:
+      - path: AlWafi/Sources
+    resources:
+      - path: AlWafi/Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.masolary.AlWafi
+        PRODUCT_NAME: AlWafi
+        INFOPLIST_KEY_CFBundleDisplayName: "Al-Wafi"
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.reference
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+    dependencies:
+      - sdk: libsqlite3.tbd
+
+schemes:
+  AlWafi:
+    build:
+      targets:
+        AlWafi: all
+    run:
+      config: Debug
+    archive:
+      config: Release
