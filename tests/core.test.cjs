@@ -42,5 +42,5 @@ test('all manifest resources exist and permissions are narrow',()=>{
   for(const resource of [...m.content_scripts.flatMap(x=>x.js),...Object.values(m.icons),m.action.default_popup,...m.declarative_net_request.rule_resources.map(x=>x.path)])assert.ok(fs.existsSync(path.join(__dirname,'../extension',resource)));
 });
 test('JavaScript files parse',()=>{
-  for(const f of ['core.js','content.js','popup.js'])new vm.Script(fs.readFileSync(path.join(__dirname,'../extension',f),'utf8'));
+  for(const f of ['chapter-index.js','core.js','link-guard.js','content.js','popup.js'])new vm.Script(fs.readFileSync(path.join(__dirname,'../extension',f),'utf8'));
 });

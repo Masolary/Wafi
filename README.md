@@ -7,11 +7,13 @@ Native iPhone/iPad packaging for the NovelCool Safari web extension. Requires iO
 ## Features
 
 - Limits permissions to NovelCool; blocks page scripts on chapter and novel-listing pages using an appended response CSP.
-- Preserves actual chapter URLs and recovers previous/next links from original page metadata without guessing numeric IDs.
+- Restores advertising-wrapped links using valid page metadata and a bundled, verified index for *Marquis of Grand Xia*. Repairs the original page links as well as toolbar navigation; no numeric IDs are guessed. Other novels have no bundled fallback when the server encrypts all destinations.
 - Adds direct navigation, a chapter selector, an optional clean reader, adjustable text and paper/dark/light themes.
 - No remote code, accounts, analytics, or transmission of reading content. Preferences stay in extension-local storage.
 
 ## Build and validation
+
+Version 1.1.1 fixes dead chapter taps: the live site wraps both anchors and previous/next metadata in advertising URLs. The bundled index contains the 132 entries exposed by the public catalogue on 2026-09-09 (87/88 are absent). Valid `.html` chapter links are also recognized. Reload existing tabs after installing this update; the toolbar shows 1.1.1.
 
 Every push to `main` runs dependency-free JavaScript tests, generates the Xcode project using XcodeGen, compiles the iOS app and embedded Safari extension on a GitHub macOS runner, verifies the `.appex`, binaries, bundle identifiers and all manifest resources, and packages an unsigned IPA. It does not obtain signing credentials, publish to the App Store or alter Apple account settings.
 

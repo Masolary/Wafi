@@ -18,11 +18,26 @@ http.createServer((req,res)=>{
     return res.end('<h1 id="result">Page scripts blocked successfully</h1><script>document.getElementById("result").textContent="FAIL: script executed"</script><iframe src="/frame"></iframe>');
   }
   const mode=u.searchParams.get('mode')||'normal';
+  if(u.pathname==='/navigation') {
+    res.setHeader('Content-Type','text/html');
+    return res.end(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Navigation regression</title>
+      <h1>Server-wrapped navigation fixture</h1>
+      <a title="Marquis of Grand Xia Chapter 61" href="https://mechanismexplained.com/go/rds/?data=encrypted" target="_blank"><span>Marquis of Grand Xia Chapter 61</span></a>
+      <script src="/extension/chapter-index.js"></script><script src="/extension/core.js"></script><script src="/extension/link-guard.js"></script>
+      <script>
+      const fixtureWindow={location:{href:'https://www.novelcool.com/novel/Marquis-of-Grand-Xia.html',assign:url=>location.assign('/arrived?destination='+encodeURIComponent(url))},addEventListener:window.addEventListener.bind(window),MutationObserver};
+      NovelCoolLinkGuard.install(fixtureWindow,document,NovelCoolGuard,NovelCoolChapterIndex);
+      </script>`);
+  }
+  if(u.pathname==='/arrived') {
+    res.setHeader('Content-Type','text/plain');
+    return res.end('PASS: navigated to '+u.searchParams.get('destination'));
+  }
   if(!['normal','unwrapped','gated','disabled','listing','rewritten'].includes(mode)){res.writeHead(400);return res.end();}
   res.setHeader('Content-Type','text/html');
   res.end(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reader Guard synthetic fixture</title><link rel="stylesheet" href="/extension/page.css"><style>body{margin:0;font:16px system-ui}main{max-width:860px;margin:auto;padding:24px}.hidden{display:none}</style><script>
   window.browser={storage:{local:{get:async()=>({disabled:${mode==='disabled'}}),set:async value=>{window.savedPreferences=value}}}};
-  </script><script src="/extension/core.js"></script><script src="/extension/content.js"></script></head><body>
+  </script><script src="/extension/chapter-index.js"></script><script src="/extension/core.js"></script><script src="/extension/link-guard.js"></script><script src="/extension/content.js"></script></head><body>
   <main><a href="https://www.novelcool.com/novel/Example.html">Example novel</a>
   <a href="${mode==='rewritten'?'https://mechanismexplained.com/go/rds/?data=opaque':'https://www.novelcool.com/chapter/Example-Chapter-43/301/'}">&lt;&lt;Prev</a>
   <a href="https://www.novelcool.com/chapter/Example-Chapter-45/909/">Next&gt;&gt;</a>

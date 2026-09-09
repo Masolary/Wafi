@@ -12,17 +12,6 @@
       if (node.httpEquiv.toLowerCase() === 'refresh') node.remove();
     });
   }
-  function guardClick(event) {
-    if (!enabled) return;
-    const a = event.composedPath().find(node => node?.tagName === 'A');
-    if (a && core.isRedirect(a.getAttribute('href'), location.href)) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      if (status) status.textContent = 'Advertising link blocked. Reload this page to restore its original chapter links.';
-    }
-  }
-  window.addEventListener('click', guardClick, true);
-  window.addEventListener('auxclick', guardClick, true);
   let status;
 
   async function start() {
@@ -30,10 +19,16 @@
       enabled = !(await api.storage.local.get('disabled')).disabled;
     } catch { return; }
     if (!enabled) return;
+    const linkGuard = window.NovelCoolLinkGuard.install(window, document, core, window.NovelCoolChapterIndex, {
+      enabled: () => enabled,
+      onBlocked: message => {if (status) status.textContent = message;}
+    });
+    linkGuard.refresh();
     removeRefresh();
     observer = new MutationObserver(removeRefresh);
-    observer.observe(document.documentElement, {childList: true, subtree: true});
+    observer.observe(document, {childList: true, subtree: true});
     if (document.readyState === 'loading') await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve, {once:true}));
+    linkGuard.refresh();
     if (document.getElementById('novelcool-reader-guard')) return;
     const host = document.createElement('div');
     host.id = 'novelcool-reader-guard';
@@ -62,7 +57,7 @@
       return node;
     }
     const bar = el('div', '', shadow); bar.className = 'bar';
-    el('span', 'NovelCool Reader Guard', bar).className = 'brand';
+    el('span', 'NovelCool Reader Guard 1.1.1', bar).className = 'brand';
     const links = [...document.querySelectorAll('a[href]')].map(a => ({href:a.getAttribute('href'),text:a.textContent}));
     const nav = core.navigation(links, location.href);
     // The site's server HTML also supplies these original URLs as plain text.

@@ -11,7 +11,7 @@
   }
   function chapter(raw, base) {
     const u = novelURL(raw, base);
-    if (!u || !/^\/chapter\/[^/]+\/\d+\/$/.test(u.pathname)) return null;
+    if (!u || !/^\/chapter\/[^/]+\/\d+(?:\/|\.html)$/.test(u.pathname)) return null;
     return u.href;
   }
   function isRedirect(raw, base) {
@@ -52,7 +52,32 @@
       theme: ['paper', 'dark', 'light'].includes(input.theme) ? input.theme : 'paper'
     };
   }
-  const api = Object.freeze({novelURL, chapter, isRedirect, navigation, preferences});
+  // Only verified destinations are used. The encrypted ad token is never
+  // followed, decrypted, executed, or treated as a chapter ID.
+  function destination(item, base, metadata = {}, index = {}) {
+    const direct = novelURL(item.href, base);
+    if (direct && !isRedirect(direct.href, base)) return direct.href;
+    if (!isRedirect(item.href, base)) return null;
+    const label = String(item.title || item.text || '').trim();
+    const previous = /^(?:<<|←)?\s*prev(?:ious)?\s*(?:<<|←)?$/i.test(label);
+    const next = /^(?:>>|→)?\s*next\s*(?:>>|→)?$/i.test(label);
+    const original = previous ? metadata.previous : next ? metadata.next : null;
+    if (chapter(original, base)) return chapter(original, base);
+    const page = novelURL(base, base);
+    if (!page || !/^(?:www\.)?novelcool\.com$/i.test(page.hostname)) return null;
+    const catalogue = '/novel/Marquis-of-Grand-Xia.html';
+    const current = page.pathname.match(/^\/chapter\/Marquis-of-Grand-Xia-Chapter-(\d+)\/\d+(?:\/|\.html)$/);
+    if (page.pathname !== catalogue && !current) return null;
+    let number;
+    if (current && (previous || next)) number = Number(current[1]) + (previous ? -1 : 1);
+    else {
+      const title = label.match(/^Marquis of Grand Xia Chapter (\d+)(?:\s|$)/i);
+      if (title) number = Number(title[1]);
+      else if (page.pathname === catalogue && /^Start Reading$/i.test(label)) number = 1;
+    }
+    return chapter(index[number], base);
+  }
+  const api = Object.freeze({novelURL, chapter, isRedirect, navigation, preferences, destination});
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.NovelCoolGuard = api;
 })(typeof window !== 'undefined' ? window : this);
