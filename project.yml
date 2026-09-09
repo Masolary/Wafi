@@ -1,4 +1,4 @@
-name: AlWafi
+name: NovelCoolReaderGuard
 options:
   bundleIdPrefix: com.masolary
   deploymentTarget:
@@ -6,38 +6,65 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "1"
-    DEVELOPMENT_TEAM: ""
+    MARKETING_VERSION: "1.1.0"
+    CURRENT_PROJECT_VERSION: "2"
+    TARGETED_DEVICE_FAMILY: "1,2"
     CODE_SIGN_STYLE: Automatic
-    ENABLE_USER_SCRIPT_SANDBOXING: YES
-
 targets:
-  AlWafi:
+  NovelCoolReaderGuard:
     type: application
     platform: iOS
     sources:
-      - path: AlWafi/Sources
-    resources:
-      - path: AlWafi/Resources
+      - path: ios/Host
+    info:
+      path: generated/Host-Info.plist
+      properties:
+        CFBundleDisplayName: Reader Guard
+        UILaunchScreen: {}
+        ITSAppUsesNonExemptEncryption: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.masolary.AlWafi
-        PRODUCT_NAME: AlWafi
-        INFOPLIST_KEY_CFBundleDisplayName: "Al-Wafi"
-        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.reference
-        INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
-        GENERATE_INFOPLIST_FILE: YES
-        TARGETED_DEVICE_FAMILY: "1,2"
+        PRODUCT_BUNDLE_IDENTIFIER: com.masolary.NovelCoolReaderGuard
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     dependencies:
-      - sdk: libsqlite3.tbd
-
+      - target: NovelCoolSafariExtension
+        embed: true
+  NovelCoolSafariExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: ios/Extension
+      - path: extension
+        buildPhase: resources
+        type: group
+    info:
+      path: generated/Extension-Info.plist
+      properties:
+        CFBundleDisplayName: NovelCool Reader Guard
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.Safari.web-extension
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).SafariWebExtensionHandler
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.masolary.NovelCoolReaderGuard.Extension
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES
+    dependencies:
+      - sdk: SafariServices.framework
 schemes:
-  AlWafi:
+  NovelCoolReaderGuard:
     build:
       targets:
-        AlWafi: all
+        NovelCoolReaderGuard: all
     run:
       config: Debug
     archive:

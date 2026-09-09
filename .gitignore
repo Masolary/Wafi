@@ -1,7 +1,6 @@
-.DS_Store
 build/
-DerivedData/
-*.xcuserstate
-xcuserdata/
-AlWafi.xcodeproj/
-AlWafi/Resources/alwafi_ios.sqlite
+dist/
+generated/
+*.xcodeproj/
+node_modules/
+ios/Host/Assets.xcassets/AppIcon.appiconset/AppIcon.png

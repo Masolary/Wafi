@@ -1,0 +1,56 @@
+name: Build iOS Safari Extension
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ios-safari-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test JavaScript and URL protection
+        run: npm test
+      - name: Install project generator
+        run: command -v xcodegen || brew install xcodegen
+      - name: Generate icon and Xcode project
+        run: |
+          swift scripts/make-icon.swift
+          xcodegen generate
+      - name: Build iPhone and iPad Safari extension
+        run: |
+          set -euo pipefail
+          xcodebuild -project NovelCoolReaderGuard.xcodeproj \
+            -scheme NovelCoolReaderGuard -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+      - name: Validate and package unsigned IPA
+        run: |
+          set -euo pipefail
+          task_app='build/Build/Products/Release-iphoneos/NovelCoolReaderGuard.app'
+          python3 scripts/validate-package.py "$task_app"
+          mkdir -p dist/Payload
+          cp -R "$task_app" dist/Payload/
+          cd dist
+          /usr/bin/zip -qry NovelCool-Safari-iOS-unsigned.ipa Payload
+          /usr/bin/unzip -t NovelCool-Safari-iOS-unsigned.ipa
+          shasum -a 256 NovelCool-Safari-iOS-unsigned.ipa > SHA256SUMS.txt
+      - name: Upload Safari extension installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: NovelCool-Safari-iOS-unsigned
+          path: |
+            dist/NovelCool-Safari-iOS-unsigned.ipa
+            dist/SHA256SUMS.txt
+            INSTALL-iOS.md
+          if-no-files-found: error
+          retention-days: 90

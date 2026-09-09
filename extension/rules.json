@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [
+        {"header": "content-security-policy", "operation": "append", "value": "script-src 'none'; frame-src 'none'; object-src 'none'"},
+        {"header": "refresh", "operation": "remove"}
+      ]
+    },
+    "condition": {
+      "regexFilter": "^https?://([a-z0-9-]+\\.)*novelcool\\.com/(chapter|novel)/",
+      "resourceTypes": ["main_frame"]
+    }
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "NovelCool Reader Guard",
+  "version": "1.1.0",
+  "description": "Script-free NovelCool chapter navigation with an optional clean reading view.",
+  "permissions": ["storage", "declarativeNetRequestWithHostAccess"],
+  "host_permissions": ["*://*.novelcool.com/*"],
+  "icons": {"48": "icon.svg", "128": "icon.svg"},
+  "action": {"default_title": "NovelCool Reader Guard", "default_popup": "popup.html", "default_icon": "icon.svg"},
+  "declarative_net_request": {"rule_resources": [{"id": "protection", "enabled": true, "path": "rules.json"}]},
+  "content_scripts": [{
+    "matches": ["*://*.novelcool.com/chapter/*", "*://*.novelcool.com/novel/*"],
+    "js": ["core.js", "content.js"],
+    "css": ["page.css"],
+    "run_at": "document_start",
+    "all_frames": false
+  }]
+}
