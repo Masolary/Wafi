@@ -2,7 +2,7 @@
 
 Native iPhone/iPad packaging for the NovelCool Safari web extension. Requires iOS/iPadOS 17 or newer. Reading occurs inside Safari; the small host app only explains setup.
 
-**Download:** open **Actions → Build iOS Safari Extension → latest successful run → Artifacts**. The output is `NovelCool-Safari-iOS-unsigned.ipa`. See [INSTALL-iOS.md](INSTALL-iOS.md). An unsigned IPA must be signed together with its embedded extension before installation; no Mac ownership is required if your signing method supports Windows.
+**Download:** open **Actions → Build iOS Safari Extension → latest successful run → Artifacts**. The output is `NovelCool-Safari-iOS-v1.1.2-unsigned.ipa`. See [INSTALL-iOS.md](INSTALL-iOS.md). An unsigned IPA must be signed together with its embedded extension before installation; no Mac ownership is required if your signing method supports Windows.
 
 ## Features
 
@@ -13,7 +13,7 @@ Native iPhone/iPad packaging for the NovelCool Safari web extension. Requires iO
 
 ## Build and validation
 
-Version 1.1.1 fixes dead chapter taps: the live site wraps both anchors and previous/next metadata in advertising URLs. The bundled index contains the 132 entries exposed by the public catalogue on 2026-09-09 (87/88 are absent). Valid `.html` chapter links are also recognized. Reload existing tabs after installing this update; the toolbar shows 1.1.1.
+Version 1.1.2 fixes dead chapter taps: the live site wraps both anchors and previous/next metadata in advertising URLs. The bundled index contains the 132 entries exposed by the public catalogue on 2026-09-09 (87/88 are absent). The package and toolbar now carry a unique 1.1.2 label so an old installation cannot be mistaken for this build. Delete the old Reader Guard app before installing and reload existing Safari tabs.
 
 Every push to `main` runs dependency-free JavaScript tests, generates the Xcode project using XcodeGen, compiles the iOS app and embedded Safari extension on a GitHub macOS runner, verifies the `.appex`, binaries, bundle identifiers and all manifest resources, and packages an unsigned IPA. It does not obtain signing credentials, publish to the App Store or alter Apple account settings.
 
@@ -21,7 +21,7 @@ Every push to `main` runs dependency-free JavaScript tests, generates the Xcode 
 
 ## Repository reuse and recovery
 
-This repository was repurposed from Wafi with the owner's authorization. The old main-branch files were replaced, not the repository history. The former dictionary project remains recoverable at commit `7b22ad681824ab4f465845a542c12743b0b42f19`. Old releases/tags were not deleted. New work is identifiable by the **Build iOS Safari Extension** workflow and **NovelCool-Safari-iOS-unsigned** artifact name.
+This repository was repurposed from Wafi with the owner's authorization. The old main-branch files were replaced, not the repository history. The former dictionary project remains recoverable at commit `7b22ad681824ab4f465845a542c12743b0b42f19`. Old releases/tags were not deleted. New work is identifiable by the **Build iOS Safari Extension** workflow and **NovelCool-Safari-iOS-v1.1.2** artifact name.
 
 ## Source references
 

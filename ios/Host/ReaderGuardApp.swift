@@ -16,7 +16,7 @@ private struct SetupView: View {
                     Image(systemName: "book.closed.fill")
                         .font(.system(size: 52)).foregroundStyle(green)
                         .accessibilityHidden(true)
-                    Text("Read in Safari.")
+                    Text("Read in Safari. 1.1.2")
                         .font(.largeTitle.bold())
                     Text("This small app installs the NovelCool Safari extension. Reading happens in Safari—not here.")
                         .font(.title3).foregroundStyle(.secondary)
@@ -42,7 +42,7 @@ private struct SetupView: View {
                         .font(.footnote).foregroundStyle(.secondary)
                 }.padding(24).frame(maxWidth: 680)
             }.frame(maxWidth: .infinity)
-                .navigationTitle("Reader Guard")
+                .navigationTitle("Reader Guard 1.1.2")
                 .navigationBarTitleDisplayMode(.inline)
         }
     }

@@ -57,7 +57,7 @@
       return node;
     }
     const bar = el('div', '', shadow); bar.className = 'bar';
-    el('span', 'NovelCool Reader Guard 1.1.1', bar).className = 'brand';
+    el('span', 'NovelCool Reader Guard 1.1.2', bar).className = 'brand';
     const links = [...document.querySelectorAll('a[href]')].map(a => ({href:a.getAttribute('href'),text:a.textContent}));
     const nav = core.navigation(links, location.href);
     // The site's server HTML also supplies these original URLs as plain text.
